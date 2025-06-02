@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive CRUD App</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        #feedback {
+            font-size: 16px;
+            margin: 10px;
+            padding: 10px;
+            display: none;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        input {
+            padding: 10px;
+            margin: 10px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            width: 250px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #0056b3;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .add-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background-color: #218838;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .edit-btn:hover {
+            background-color: #e0a800;
+        }
+
+        table {
+            width: 70%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        td {
+            background-color: #ffffff;
+        }
+
+        .fade {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            table {
+                width: 90%;
+            }
+
+            input {
+                width: 90%;
+            }
+
+            button {
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Interactive CRUD Application</h2>
+
+    <p id="feedback"></p>
+
+    <input type="text" id="item" placeholder="Enter item">
+    <button class="add-btn" onclick="addItem()">Add</button>
+
+    <h3>Total Items: <span id="itemCount">0</span></h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        let items = JSON.parse(localStorage.getItem("items")) || [];
+
+        function showMessage(message, type) {
+            const feedback = document.getElementById("feedback");
+            feedback.textContent = message;
+            feedback.className = type;
+            feedback.style.display = "block";
+
+            setTimeout(() => {
+                feedback.style.display = "none";
+            }, 2000);
+        }
+
+        function updateCounter() {
+            document.getElementById("itemCount").textContent = items.length;
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById("tableBody");
+            tableBody.innerHTML = "";
+            items.forEach((item, index) => {
+                let row = tableBody.insertRow();
+                row.classList.add("fade");
+                row.insertCell(0).textContent = item;
+
+                let actionCell = row.insertCell(1);
+                let editBtn = document.createElement("button");
+                editBtn.textContent = "Edit";
+                editBtn.classList.add("edit-btn");
+                editBtn.onclick = () => editItem(index);
+
+                let deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+                deleteBtn.classList.add("delete-btn");
+                deleteBtn.onclick = () => deleteItem(index);
+
+                actionCell.appendChild(editBtn);
+                actionCell.appendChild(deleteBtn);
+            });
+
+            localStorage.setItem("items", JSON.stringify(items));
+            updateCounter();
+        }
+
+        function addItem() {
+            const input = document.getElementById("item");
+            const newItem = input.value.trim();
+
+            if (newItem === "") {
+                showMessage("Item cannot be empty!", "error");
+                return;
+            }
+            if (items.includes(newItem)) {
+                showMessage("Duplicate items are not allowed!", "error");
+                return;
+            }
+
+            items.push(newItem);
+            input.value = "";
+            renderTable();
+            showMessage("Item added successfully!", "success");
+        }
+
+        function editItem(index) {
+            const newValue = prompt("Edit item:", items[index]);
+            if (newValue !== null && newValue.trim() !== "") {
+                items[index] = newValue.trim();
+                renderTable();
+                showMessage("Item updated successfully!", "success");
+            }
+        }
+
+        function deleteItem(index) {
+            if (confirm("Are you sure you want to delete this item?")) {
+                items.splice(index, 1);
+                renderTable();
+                showMessage("Item deleted successfully!", "error");
+            }
+        }
+
+        renderTable();
+    </script>
+</body>
+</html>
